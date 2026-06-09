@@ -91,19 +91,40 @@ function solveLCMHCF(input) {
 
 // ── Quadratic ──
 function solveQuadratic(input) {
-  // Try to extract a, b, c from ax^2 + bx + c = 0
-  const match = input.match(/(-?\d*\.?\d*)\s*x\^?2\s*([+\-]\s*\d*\.?\d*)\s*x\s*([+\-]\s*\d*\.?\d*)\s*=?\s*0?/i);
-  if (!match) return null;
+  // Clean input
+  let expr = input.replace(/\s+/g, "").replace(/=0$/, "").replace(/=0.*/, "");
+  
+  // Remove 'x^2' or 'x2' and collect coefficient
+  let a = 0, b = 0, c = 0;
 
-  let a = parseFloat(match[1]) || 1;
-  let b = parseFloat(match[2].replace(/\s/g, "")) || 0;
-  let c = parseFloat(match[3].replace(/\s/g, "")) || 0;
+  // Normalize: x^2 → x2, make signs explicit
+  expr = expr.replace(/\^/g, "");
+
+  // Add + at start if not starting with -
+  if (!expr.startsWith("-")) expr = "+" + expr;
+
+  // Split by + or - keeping the sign
+  const terms = expr.match(/[+\-][^+\-]*/g) || [];
+
+  terms.forEach(term => {
+    if (term.includes("x2")) {
+      const coef = term.replace("x2", "") || "+1";
+      a += parseFloat(coef === "+" ? "+1" : coef === "-" ? "-1" : coef);
+    } else if (term.includes("x")) {
+      const coef = term.replace("x", "") || "+1";
+      b += parseFloat(coef === "+" ? "+1" : coef === "-" ? "-1" : coef);
+    } else {
+      c += parseFloat(term);
+    }
+  });
+
+  if (a === 0) return null;
 
   const disc = b * b - 4 * a * c;
   const sign = (n) => n >= 0 ? `+${n}` : `${n}`;
 
   const steps = [
-    { latex: `${a}x^2 ${sign(b)}x ${sign(c)} = 0`, explanation: "Standard form: ax² + bx + c = 0 identify kiya" },
+    { latex: `${a}x^2 ${sign(b)}x ${sign(c)} = 0`, explanation: "Sabhi x terms combine karke standard form banaya" },
     { latex: `a=${a},\\ b=${b},\\ c=${c}`, explanation: "Coefficients identify kiye" },
     { latex: `D = b^2 - 4ac = (${b})^2 - 4(${a})(${c}) = ${disc}`, explanation: "Discriminant calculate kiya: D = b² - 4ac" },
   ];
@@ -113,20 +134,20 @@ function solveQuadratic(input) {
   if (disc < 0) {
     const realPart = (-b / (2 * a)).toFixed(2);
     const imagPart = (Math.sqrt(-disc) / (2 * a)).toFixed(2);
-    steps.push({ latex: `x = \\frac{-b \\pm \\sqrt{D}}{2a}`, explanation: "D < 0, isliye roots complex (imaginary) hain" });
-    steps.push({ latex: `x = ${realPart} \\pm ${imagPart}i`, explanation: "Complex roots — real world mein koi solution nahi" });
-    answer = `x = ${realPart} ± ${imagPart}i (complex roots)`;
+    steps.push({ latex: `x = \\frac{-b \\pm \\sqrt{D}}{2a}`, explanation: "D < 0, roots complex hain" });
+    steps.push({ latex: `x = ${realPart} \\pm ${imagPart}i`, explanation: "Complex roots — real world mein solution nahi" });
+    answer = `x = ${realPart} ± ${imagPart}i`;
     answerLatex = `x = ${realPart} \\pm ${imagPart}i`;
   } else if (disc === 0) {
-    const x = -b / (2 * a);
-    steps.push({ latex: `D = 0 \\Rightarrow \\text{Equal roots}`, explanation: "D = 0, matlab dono roots equal hain" });
+    const x = (-b / (2 * a)).toFixed(4);
+    steps.push({ latex: `D = 0 \\Rightarrow \\text{Equal roots}`, explanation: "D = 0, dono roots equal hain" });
     steps.push({ latex: `x = \\frac{-b}{2a} = \\frac{${-b}}{${2 * a}} = ${x}`, explanation: "Ek hi root hai" });
     answer = `x = ${x} (repeated root)`;
     answerLatex = `x = ${x}`;
   } else {
     const x1 = ((-b + Math.sqrt(disc)) / (2 * a)).toFixed(4);
     const x2 = ((-b - Math.sqrt(disc)) / (2 * a)).toFixed(4);
-    steps.push({ latex: `x = \\frac{-b \\pm \\sqrt{D}}{2a} = \\frac{${-b} \\pm \\sqrt{${disc}}}{${2 * a}}`, explanation: "Quadratic formula apply kiya: x = (-b ± √D) / 2a" });
+    steps.push({ latex: `x = \\frac{-b \\pm \\sqrt{D}}{2a} = \\frac{${-b} \\pm \\sqrt{${disc}}}{${2 * a}}`, explanation: "Quadratic formula apply kiya" });
     steps.push({ latex: `x_1 = ${x1},\\quad x_2 = ${x2}`, explanation: "Dono roots calculate kiye" });
     answer = `x₁ = ${x1}, x₂ = ${x2}`;
     answerLatex = `x_1 = ${x1},\\ x_2 = ${x2}`;
