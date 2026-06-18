@@ -18,16 +18,55 @@ GanitYantra is a hybrid math-solver application with a React + Vite frontend and
 - Keyboard shortcut support for solving with Ctrl/Cmd + Enter.
 - Lightweight single-page interface with a custom dark visual style.
 
+## Quick Start
+
+Prerequisites:
+
+- Node.js 18+ and npm
+- Python 3.10+
+
+1) Install frontend dependencies
+
+```bash
+npm install
+```
+
+2) Start the frontend (development)
+
+```bash
+npm run dev
+```
+
+3) Backend: set your Groq API key and run FastAPI
+
+Create `backend/.env` (or set `GROQ_KEY` in your environment):
+
+```env
+GROQ_KEY=your_groq_api_key_here
+```
+
+Install (recommended in a virtualenv) and run the backend:
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate    # Windows
+pip install fastapi uvicorn python-dotenv groq pydantic
+cd backend
+uvicorn main:app --reload --port 8000
+```
+
+Open the Vite URL shown in the frontend terminal and use the app.
+
 ## Tech Stack
 
-| Area | Detected technologies | Notes |
+| Area | Technologies | Notes |
 |---|---|---|
 | Frontend technologies | React 19, Vite, JavaScript, inline CSS, KaTeX, react-katex, mathjs | Single-page React app with client-side rendering. |
 | Backend technologies | FastAPI, Uvicorn, Pydantic, python-dotenv, Groq SDK, CORS middleware | Backend exposes `/explain` and `/health`. |
-| Database | Not detected in project | No ORM, client, or persistence layer found. |
-| Authentication | Not detected in project | No login, sessions, JWT, or token flow found. |
-| State Management | React local state only | No Redux, Zustand, MobX, or external state library detected. |
-| Deployment tools | Vite build pipeline, Uvicorn | No Docker, Compose, Vercel, or Netlify config detected. |
+| Database | Not used | No ORM, client, or persistence layer. |
+| Authentication | Not used | No login, sessions, JWT, or token flow. |
+| State Management | React local state only | No Redux, Zustand, MobX, or external state library. |
+| Deployment tools | Vite build pipeline, Uvicorn | No Docker, Compose, Vercel, or Netlify config. |
 | Other important libraries | eslint, eslint-plugin-react-hooks, eslint-plugin-react-refresh, @vitejs/plugin-react, globals | Linting and developer tooling. |
 
 ## Project Structure
@@ -54,10 +93,18 @@ ganityantra/
 │   │   ├── KaTeXRenderer.jsx
 │   │   ├── LevelSelector.jsx
 │   │   └── StepDisplay.jsx
-│   └── engines/
-│       ├── arithmeticSolver.js
-│       ├── index.js
-│       └── quadraticSolver.js
+│   ├── config/
+│   │   └── levels.js
+│   ├── engines/
+│   │   ├── arithmeticSolver.js
+│   │   ├── index.js
+│   │   └── quadraticSolver.js
+│   ├── services/
+│   │   └── aiService.js
+│   └── utils/
+│       ├── detectLevel.js
+│       ├── detectTopic.js
+│       └── solveLocally.js
 ├── eslint.config.js
 ├── index.html
 ├── package.json
@@ -66,79 +113,24 @@ ganityantra/
 └── vite.config.js
 ```
 
-### Major folders and files
+### Major Folders and Files
 
 | Path | Purpose |
 |---|---|
-| `src/App.jsx` | Main application shell. It contains level detection, local solving orchestration, AI explanation fetching, KaTeX loading, and the full UI composition. |
-| `src/components/` | Reusable UI components for the header, input area, solution steps, final answer, AI explanation panel, level selector, and KaTeX rendering. |
+| `src/App.jsx` | Main application shell. Contains level detection, local solving orchestration, AI explanation fetching, KaTeX loading, and full UI composition. |
+| `src/components/` | Reusable UI components for header, input area, solution steps, final answer, AI explanation panel, level selector, and KaTeX rendering. |
 | `src/engines/` | Deterministic math solver layer. Arithmetic and quadratic solvers live here, with `index.js` acting as the single import surface. |
-| `src/assets/` | Empty at the moment. No app-specific assets were detected there. |
-| `public/` | Static public assets used by Vite, currently favicon and icon SVGs. |
+| `src/config/` | Configuration files including education level definitions. |
+| `src/services/` | Backend communication and AI-related service calls. |
+| `src/utils/` | Utility functions for level detection, topic detection, and local problem-solving. |
+| `src/assets/` | App-specific assets (currently empty). |
+| `public/` | Static public assets used by Vite (favicon and icon SVGs). |
 | `backend/main.py` | FastAPI app that sends step explanations to Groq and exposes `/explain` plus `/health`. |
-| `backend/.env` | Local environment file for secrets. The detected key is not documented here for security reasons. |
+| `backend/.env` | Local environment file for secrets. |
 | `package.json` | Frontend scripts and dependencies. |
-| `package-lock.json` | npm lockfile that pins installed frontend dependency versions. |
-| `vite.config.js` | Vite configuration. No custom proxy or alias configuration detected. |
+| `vite.config.js` | Vite configuration. |
 | `eslint.config.js` | ESLint flat config for JavaScript/JSX linting. |
 | `index.html` | Vite HTML entry point that mounts the React app. |
-
-### Pages, services, and utilities
-
-- Pages: Not detected in project. The app is implemented as a single-page experience in `src/App.jsx`.
-- Services: No standalone `services/` folder detected. Backend communication is handled directly in `src/App.jsx` and `backend/main.py`.
-- Utilities: No dedicated `utils/` folder detected. Shared math logic lives under `src/engines/`.
-
-## Installation
-
-### 1. Prerequisites
-
-- Node.js 18+ recommended.
-- npm.
-- Python 3.10+ recommended.
-
-### 2. Install frontend dependencies
-
-```bash
-npm install
-```
-
-### 3. Set up the backend environment
-
-Create `backend/.env` from the sample below and add your Groq API key.
-
-```env
-GROQ_KEY=your_groq_api_key_here
-```
-
-If you prefer, copy the sample file:
-
-```bash
-copy backend\.env.example backend\.env
-```
-
-### 4. Install backend dependencies
-
-The repository does not include `requirements.txt`, so install the Python packages used by `backend/main.py` manually.
-
-```bash
-python -m venv .venv
-.venv\Scripts\activate
-pip install fastapi uvicorn python-dotenv groq pydantic
-```
-
-## Environment Variables
-
-| Variable | Location | Purpose | Required |
-|---|---|---|---|
-| `GROQ_KEY` | `backend/.env` | Authenticates requests from the FastAPI backend to Groq. | Yes |
-| Frontend env vars | Not detected in project | No frontend environment variables were found. The frontend currently uses a hardcoded backend URL. | No |
-
-### Sample `backend/.env.example`
-
-```env
-GROQ_KEY=your_groq_api_key_here
-```
 
 ## Available Scripts
 
@@ -149,92 +141,30 @@ GROQ_KEY=your_groq_api_key_here
 | `lint` | `eslint .` | Lints the repository using the configured ESLint rules. |
 | `preview` | `vite preview` | Serves the production build locally for verification. |
 
-## Usage
-
-Start the backend from the `backend/` directory and the frontend from the repository root.
-
-### Backend
-
-```bash
-cd backend
-uvicorn main:app --reload --port 8000
-```
-
-### Frontend
-
-```bash
-cd ..
-npm run dev
-```
-
-Open the Vite URL shown in the terminal, then enter a supported math problem such as:
-
-- `LCM of 12 and 18`
-- `x^2 - 5x + 6 = 0`
-- `3/4 + 1/2`
-- `15% of 240`
-
-## Build for Production
-
-### Frontend build
-
-```bash
-npm run build
-```
-
-### Preview the production build
-
-```bash
-npm run preview
-```
-
-### Backend production start
-
-```bash
-cd backend
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
-
-## Deployment
-
-The project appears to be designed for separate frontend and backend deployment.
-
-1. Build the frontend with `npm run build` and deploy the generated static files from `dist/` to a static host.
-2. Deploy the FastAPI backend with a production ASGI server such as Uvicorn behind a reverse proxy.
-3. Set `GROQ_KEY` in the backend deployment environment.
-4. Update the frontend backend URL from `http://127.0.0.1:8000/explain` to your deployed API base URL.
-5. Tighten CORS in production. The current backend config allows all origins, methods, and headers.
-
-### Deployment notes
-
-- Vite has no custom proxy configured, so frontend-to-backend connectivity must be handled explicitly in deployment.
-- No Docker, Compose, Vercel, or Netlify configuration was detected in the repository.
-- If deploying the frontend separately, ensure the API URL is exposed through an environment variable or build-time replacement in code.
-
-## API Documentation
+## Backend API
 
 ### `POST /explain`
 
 Generates a short Hinglish explanation for a solved math problem.
 
-#### Request body
+**Request body:**
 
 ```json
 {
-	"problem": "x^2 - 5x + 6 = 0",
-	"steps": [
-		{ "latex": "x^2 - 5x + 6 = 0", "explanation": "Standard form" }
-	],
-	"level": "class910",
-	"topic": "quadratic"
+  "problem": "x^2 - 5x + 6 = 0",
+  "steps": [
+    { "latex": "x^2 - 5x + 6 = 0", "explanation": "Standard form" }
+  ],
+  "level": "class910",
+  "topic": "quadratic"
 }
 ```
 
-#### Response
+**Response:**
 
 ```json
 {
-	"explanation": "..."
+  "explanation": "..."
 }
 ```
 
@@ -244,16 +174,15 @@ Returns a simple health check response.
 
 ```json
 {
-	"status": "ok"
+  "status": "ok"
 }
 ```
 
-### External AI integration
+## Environment Variables
 
-- Provider: Groq
-- SDK: `groq`
-- Model detected: `llama-3.3-70b-versatile`
-- Usage: backend-only request from `backend/main.py`
+| Variable | Location | Purpose | Required |
+|---|---|---|---|
+| `GROQ_KEY` | `backend/.env` | Authenticates requests from the FastAPI backend to Groq. | Yes |
 
 ## Key Components
 
@@ -266,7 +195,10 @@ Returns a simple health check response.
 | `src/components/StepDisplay.jsx` | Displays solution steps with progressive reveal behavior. |
 | `src/components/AIExplanation.jsx` | Displays the backend-generated explanation and loading state. |
 | `src/components/FinalAnswer.jsx` | Displays the final answer card with optional LaTeX rendering. |
-| `backend/main.py` | Exposes the explanation API and forwards structured prompts to Groq. |
+| `src/services/aiService.js` | Handles backend API calls for AI explanations. |
+| `src/utils/detectLevel.js` | Detects education level from problem text. |
+| `src/utils/detectTopic.js` | Detects problem topic (arithmetic, quadratic, etc.). |
+| `backend/main.py` | FastAPI app that exposes `/explain` and `/health` endpoints. |
 
 ## Architecture Overview
 
@@ -282,48 +214,45 @@ flowchart LR
 	E --> F
 ```
 
-The application follows a hybrid client/server flow. The frontend first determines the likely level and topic, then runs the matching local solver to produce deterministic steps and the final answer. After that, it sends the problem and generated steps to the backend, which asks Groq to produce a concise Hinglish explanation. The UI then renders the math output through KaTeX and shows the AI explanation separately.
+The application follows a hybrid client/server flow:
+1. Frontend detects the education level and problem topic.
+2. Frontend runs the matching local solver to produce deterministic steps and final answer.
+3. Frontend sends the problem and generated steps to the backend.
+4. Backend asks Groq to produce a concise Hinglish explanation.
+5. UI renders the math output through KaTeX and displays the AI explanation.
 
 ## Performance Optimizations
 
 - Local solving happens before the AI request, so the core answer does not depend on network latency.
 - Only the structured problem summary and steps are sent to the backend for explanation.
-- KaTeX assets are loaded on demand from the CDN after the app mounts instead of being bundled into the main initial payload.
+- KaTeX assets are loaded on demand from the CDN after the app mounts instead of being bundled into the main payload.
 - The math solver routes to the narrowest matching engine first, which keeps unsupported branches from doing unnecessary work.
 
 ## Security Considerations
 
 - `GROQ_KEY` is kept server-side and read from the backend environment.
-- No frontend secret handling was detected.
+- No frontend secret handling is used.
 - The backend currently allows all CORS origins, methods, and headers. This is suitable for local development only and should be restricted in production.
 - The frontend currently uses a hardcoded backend URL. For production, that URL should be externalized so it can be changed safely per environment.
-- No authentication, authorization, token handling, or database security layer was detected in the project.
+- No authentication, authorization, token handling, or database security layer is present in the project.
 
-## Future Improvements
+## Notes & Recommendations
 
-- Externalize the backend API URL into a frontend environment variable.
-- Add a checked-in `requirements.txt` or Python dependency lock file for the backend.
-- Split `src/App.jsx` into smaller route-level or feature-level modules if the UI grows.
-- Remove the hardcoded development-oriented CORS configuration before production deployment.
-- Add automated tests for the solver engines and backend API.
-- Introduce routing only if the project expands beyond a single-page experience.
-- Add a real component import path in `App.jsx` if the reusable components under `src/components/` are intended to be the source of truth.
+- The backend uses the `groq` SDK and expects `GROQ_KEY` in the environment (see [backend/main.py](backend/main.py)).
+- CORS is permissive for local development; restrict origins in production.
+- Consider adding `backend/requirements.txt` for reproducible backend installs.
+- Externalize the frontend API base URL before deploying.
 
 ## Contributing
 
 1. Create a branch for your change.
-2. Keep changes focused and consistent with the existing JavaScript style.
-3. Run `npm run lint` and verify the frontend still builds.
-4. If you change backend behavior, validate the FastAPI server manually as well.
-5. Update the README or `.env.example` when you add new environment variables or scripts.
+2. Run `npm run lint` and verify the frontend builds.
+3. If you modify backend behavior, test the FastAPI server locally.
+4. Update the README when you add new environment variables or scripts.
 
 ## License
 
-Not detected in project. Add a license file before publishing or distributing the application.
+Add a `LICENSE` file to declare a project license before publishing.
 
-## Package Manager Files
-
-- `package.json`: present and active.
-- `package-lock.json`: present and active.
-- `yarn.lock`: not detected in project.
-- `pnpm-lock.yaml`: not detected in project.
+---
+Updated README: added Quick Start at the top while preserving full project structure, tech stack, and component details.
